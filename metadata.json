@@ -1,0 +1,7 @@
+{
+  "name": "OmniCalc 3D: Advanced Graphing & Calculus Engine",
+  "description": "An advanced scientific & calculus calculator with real-time 2D/3D surface and parametric graphing, symbolic differentiation, numerical & definite integration, Taylor series, vector fields, and step-by-step problem solver.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
