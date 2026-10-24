@@ -153,27 +153,27 @@ export const PresetsModal: React.FC<PresetsModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-none">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[85dvh] flex flex-col shadow-2xl overflow-hidden text-slate-100">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-cyan-400" />
+            <Sparkles className="w-5 h-5 text-cyan-400 shrink-0" />
             <div>
-              <h2 className="text-base font-semibold text-white">Mathematical Curated Presets</h2>
-              <p className="text-xs text-slate-400">Famous curves, calculus integrals, and waveforms</p>
+              <h2 className="text-sm sm:text-base font-semibold text-white">Mathematical Curated Presets</h2>
+              <p className="text-[11px] sm:text-xs text-slate-400">Famous curves, calculus integrals, and waveforms</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Preset Cards */}
-        <div className="p-6 overflow-y-auto space-y-3">
+        <div className="p-3.5 sm:p-6 overflow-y-auto space-y-3">
           <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">
             Real-Time Graphing & Calculus Scenarios
           </div>

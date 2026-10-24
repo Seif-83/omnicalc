@@ -49,9 +49,12 @@ export const CalculusSolver: React.FC = () => {
   });
 
   const [copied, setCopied] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'input' | 'solution'>('input');
+  const [showPresetsMobile, setShowPresetsMobile] = useState(false);
 
   // Solve based on active tab
   const handleSolve = () => {
+    setMobileTab('solution');
     switch (activeTab) {
       case 'derivative':
         setResult(CalculusEngine.differentiate(expression, variable, order));
@@ -128,9 +131,40 @@ export const CalculusSolver: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row w-full h-full bg-slate-950 overflow-hidden text-slate-100">
+      {/* Mobile Top View Switcher */}
+      <div className="lg:hidden px-3 pt-2.5 pb-1 bg-slate-950 flex items-center justify-center shrink-0">
+        <div className="flex items-center p-1 bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm">
+          <button
+            onClick={() => setMobileTab('input')}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              mobileTab === 'input'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Problem Setup
+          </button>
+          <button
+            onClick={() => setMobileTab('solution')}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+              mobileTab === 'solution'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>Solution & Steps</span>
+            {result && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
+          </button>
+        </div>
+      </div>
+
       {/* Left Input Configuration Column */}
-      <div className="w-full lg:w-[420px] bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto p-5">
-        <div className="flex items-center gap-2 mb-4">
+      <div
+        className={`w-full lg:w-[420px] bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex-col shrink-0 overflow-y-auto p-4 sm:p-5 h-full ${
+          mobileTab === 'solution' ? 'hidden lg:flex' : 'flex'
+        }`}
+      >
+        <div className="flex items-center gap-2 mb-4 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
             ∫
           </div>
@@ -400,11 +434,19 @@ export const CalculusSolver: React.FC = () => {
         </div>
 
         {/* Quick Famous Calculus Benchmarks */}
-        <div className="mt-8 pt-4 border-t border-slate-800">
-          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
-            Famous Problem Presets
-          </h3>
-          <div className="space-y-1.5">
+        <div className="mt-6 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-between mb-2.5">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Famous Problem Presets
+            </h3>
+            <button
+              onClick={() => setShowPresetsMobile(!showPresetsMobile)}
+              className="lg:hidden text-xs text-cyan-400 font-medium px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-800"
+            >
+              {showPresetsMobile ? 'Hide' : 'Show All'}
+            </button>
+          </div>
+          <div className={`space-y-1.5 ${showPresetsMobile ? 'block' : 'hidden lg:block'}`}>
             {[
               {
                 title: 'Product & Chain: x³ sin(x)',
@@ -438,7 +480,7 @@ export const CalculusSolver: React.FC = () => {
               <button
                 key={idx}
                 onClick={p.action}
-                className="w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800/60 text-xs text-slate-300 hover:text-white transition-colors flex items-center justify-between"
+                className="w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800/60 text-xs text-slate-300 hover:text-white transition-colors flex items-center justify-between active:scale-[0.99]"
               >
                 <span>{p.title}</span>
                 <ArrowRight className="w-3.5 h-3.5 text-cyan-500 opacity-60" />
@@ -449,7 +491,17 @@ export const CalculusSolver: React.FC = () => {
       </div>
 
       {/* Right Column: Step-by-Step Mathematical Walkthrough */}
-      <div className="flex-1 h-full overflow-y-auto p-6 lg:p-8 space-y-6">
+      <div
+        className={`flex-1 h-full overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5 ${
+          mobileTab === 'input' ? 'hidden lg:block' : 'block'
+        }`}
+      >
+        <button
+          onClick={() => setMobileTab('input')}
+          className="lg:hidden w-full flex items-center justify-center gap-2 py-2 px-3 mb-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-cyan-400 hover:bg-slate-850 active:scale-98 transition-all shadow-sm"
+        >
+          ← Edit Problem Parameters
+        </button>
         {result ? (
           <div className="max-w-3xl mx-auto space-y-6">
             {/* Hero Result Banner */}

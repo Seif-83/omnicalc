@@ -42,7 +42,7 @@ export default function App() {
   ]);
 
   return (
-    <div className="flex flex-col w-screen h-screen bg-slate-950 overflow-hidden font-sans select-none">
+    <div className="flex flex-col w-full h-[100dvh] bg-slate-950 overflow-hidden font-sans select-none">
       {/* Header Bar */}
       <Header
         currentMode={currentMode}
@@ -51,7 +51,7 @@ export default function App() {
       />
 
       {/* Main Workspace Mode Viewport */}
-      <main className="flex-1 w-full h-[calc(100vh-3.5rem)] relative overflow-hidden">
+      <main className="flex-1 w-full h-[calc(100dvh-3.5rem)] pb-14 md:pb-0 relative overflow-hidden">
         {currentMode === 'scientific' && <ScientificKeypad />}
 
         {currentMode === 'calculus' && <CalculusSolver />}

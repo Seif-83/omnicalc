@@ -25,6 +25,7 @@ export const MatrixCalculator: React.FC = () => {
   const [operation, setOperation] = useState<'det' | 'inv' | 'transpose' | 'mult' | 'solve' | 'eigen'>('det');
   const [resultLatex, setResultLatex] = useState<string>('');
   const [resultDetails, setResultDetails] = useState<string>('');
+  const [mobileTab, setMobileTab] = useState<'inputs' | 'result'>('inputs');
 
   // Handle cell edits
   const handleCellChangeA = (r: number, c: number, val: string) => {
@@ -74,6 +75,7 @@ export const MatrixCalculator: React.FC = () => {
 
   // Perform Calculation
   const calculate = () => {
+    setMobileTab('result');
     try {
       if (operation === 'det') {
         const d = math.det(matrixA);
@@ -136,18 +138,49 @@ export const MatrixCalculator: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row w-full h-full bg-slate-950 overflow-hidden text-slate-100 p-6 lg:p-8 gap-6">
+    <div className="flex flex-col lg:flex-row w-full h-full bg-slate-950 overflow-hidden text-slate-100 p-2.5 sm:p-6 lg:p-8 gap-3 sm:gap-6">
+      {/* Mobile Top View Switcher */}
+      <div className="lg:hidden px-1 pt-1 pb-1 flex items-center justify-center shrink-0">
+        <div className="flex items-center p-1 bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm">
+          <button
+            onClick={() => setMobileTab('inputs')}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              mobileTab === 'inputs'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Matrix Inputs
+          </button>
+          <button
+            onClick={() => setMobileTab('result')}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+              mobileTab === 'result'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>Result & Analysis</span>
+            {resultLatex && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
+          </button>
+        </div>
+      </div>
+
       {/* Configuration & Matrix Inputs */}
-      <div className="w-full lg:w-[480px] space-y-5 shrink-0 overflow-y-auto">
+      <div
+        className={`w-full lg:w-[480px] space-y-4 sm:space-y-5 shrink-0 overflow-y-auto h-full ${
+          mobileTab === 'result' ? 'hidden lg:block' : 'block'
+        }`}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Grid className="w-5 h-5 text-cyan-400" />
-            <h2 className="text-base font-semibold text-white">Linear Algebra & Matrix Engine</h2>
+            <h2 className="text-sm sm:text-base font-semibold text-white">Linear Algebra & Matrix Engine</h2>
           </div>
-          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-xl">
+          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-xl shrink-0">
             <button
               onClick={() => changeSize(2)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium ${
+              className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium transition-all ${
                 sizeA === 2 ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -155,7 +188,7 @@ export const MatrixCalculator: React.FC = () => {
             </button>
             <button
               onClick={() => changeSize(3)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium ${
+              className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium transition-all ${
                 sizeA === 3 ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -165,7 +198,7 @@ export const MatrixCalculator: React.FC = () => {
         </div>
 
         {/* Operation Picker */}
-        <div className="grid grid-cols-3 gap-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
           {[
             { id: 'det', label: 'Determinant det(A)' },
             { id: 'inv', label: 'Inverse A⁻¹' },
@@ -177,7 +210,7 @@ export const MatrixCalculator: React.FC = () => {
             <button
               key={op.id}
               onClick={() => setOperation(op.id as any)}
-              className={`p-2.5 rounded-xl border text-center transition-all ${
+              className={`p-2 sm:p-2.5 rounded-xl border text-center transition-all ${
                 operation === op.id
                   ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/60 font-semibold'
                   : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-850 hover:text-white'
@@ -189,14 +222,14 @@ export const MatrixCalculator: React.FC = () => {
         </div>
 
         {/* Matrix A Input Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 space-y-2.5 sm:space-y-3">
           <div className="flex items-center justify-between text-xs font-medium text-slate-300">
             <span>Matrix A</span>
             <span className="text-[11px] font-mono text-cyan-400">{sizeA} × {sizeA}</span>
           </div>
 
           <div
-            className="grid gap-2"
+            className="grid gap-1.5 sm:gap-2"
             style={{ gridTemplateColumns: `repeat(${sizeA}, minmax(0, 1fr))` }}
           >
             {matrixA.map((row, r) =>
@@ -207,7 +240,7 @@ export const MatrixCalculator: React.FC = () => {
                   step="any"
                   value={val}
                   onChange={(e) => handleCellChangeA(r, c, e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center font-mono text-sm text-cyan-300 focus:outline-none focus:border-cyan-500"
+                  className="bg-slate-950 border border-slate-800 rounded-lg p-2 sm:p-2.5 text-center font-mono text-xs sm:text-sm text-cyan-300 focus:outline-none focus:border-cyan-500"
                 />
               ))
             )}
@@ -216,14 +249,14 @@ export const MatrixCalculator: React.FC = () => {
 
         {/* Matrix B or Vector b Input if needed */}
         {operation === 'mult' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 space-y-2.5 sm:space-y-3">
             <div className="flex items-center justify-between text-xs font-medium text-slate-300">
               <span>Matrix B</span>
               <span className="text-[11px] font-mono text-emerald-400">{sizeA} × {sizeA}</span>
             </div>
 
             <div
-              className="grid gap-2"
+              className="grid gap-1.5 sm:gap-2"
               style={{ gridTemplateColumns: `repeat(${sizeA}, minmax(0, 1fr))` }}
             >
               {matrixB.map((row, r) =>
@@ -234,7 +267,7 @@ export const MatrixCalculator: React.FC = () => {
                     step="any"
                     value={val}
                     onChange={(e) => handleCellChangeB(r, c, e.target.value)}
-                    className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center font-mono text-sm text-emerald-300 focus:outline-none focus:border-emerald-500"
+                    className="bg-slate-950 border border-slate-800 rounded-lg p-2 sm:p-2.5 text-center font-mono text-xs sm:text-sm text-emerald-300 focus:outline-none focus:border-emerald-500"
                   />
                 ))
               )}
@@ -243,10 +276,10 @@ export const MatrixCalculator: React.FC = () => {
         )}
 
         {operation === 'solve' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 space-y-2.5 sm:space-y-3">
             <div className="text-xs font-medium text-slate-300">Vector b in Ax = b</div>
             <div
-              className="grid gap-2"
+              className="grid gap-1.5 sm:gap-2"
               style={{ gridTemplateColumns: `repeat(${sizeA}, minmax(0, 1fr))` }}
             >
               {vectorB.map((val, i) => (
@@ -261,7 +294,7 @@ export const MatrixCalculator: React.FC = () => {
                     next[i] = num;
                     setVectorB(next);
                   }}
-                  className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center font-mono text-sm text-amber-300 focus:outline-none focus:border-amber-500"
+                  className="bg-slate-950 border border-slate-800 rounded-lg p-2 sm:p-2.5 text-center font-mono text-xs sm:text-sm text-amber-300 focus:outline-none focus:border-amber-500"
                 />
               ))}
             </div>
@@ -270,7 +303,7 @@ export const MatrixCalculator: React.FC = () => {
 
         <button
           onClick={calculate}
-          className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 text-sm transition-all"
+          className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 text-xs sm:text-sm transition-all active:scale-[0.98]"
         >
           <Sparkles className="w-4 h-4" />
           Execute Matrix Operation
@@ -278,18 +311,29 @@ export const MatrixCalculator: React.FC = () => {
       </div>
 
       {/* Result Display */}
-      <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 flex flex-col justify-center space-y-6">
+      <div
+        className={`flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 lg:p-8 flex-col justify-center space-y-4 sm:space-y-6 overflow-y-auto h-full ${
+          mobileTab === 'inputs' ? 'hidden lg:flex' : 'flex'
+        }`}
+      >
+        <button
+          onClick={() => setMobileTab('inputs')}
+          className="lg:hidden w-full flex items-center justify-center gap-2 py-2 px-3 mb-2 rounded-xl bg-slate-950 border border-slate-800 text-xs font-semibold text-cyan-400 hover:bg-slate-850 active:scale-98 transition-all shadow-sm"
+        >
+          ← Modify Matrix Inputs
+        </button>
+
         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           Matrix Result & Linear Transformation Analysis
         </h3>
 
         {resultLatex ? (
-          <div className="space-y-6">
-            <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl overflow-x-auto text-xl text-white">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-slate-950 border border-slate-800 p-4 sm:p-6 rounded-2xl overflow-x-auto text-lg sm:text-xl text-white">
               <MathRenderer math={resultLatex} block />
             </div>
 
-            <div className="bg-slate-950/70 border border-slate-800/80 p-5 rounded-2xl text-xs text-slate-300 space-y-2">
+            <div className="bg-slate-950/70 border border-slate-800/80 p-4 sm:p-5 rounded-2xl text-xs text-slate-300 space-y-2">
               <span className="font-semibold text-cyan-400 uppercase tracking-wider text-[11px] block">
                 Mathematical Context
               </span>

@@ -29,9 +29,19 @@ export const Grapher2D: React.FC<Grapher2DProps> = ({ functions, onUpdateFunctio
   // Interactive probe / tangent line at x0
   const [probeX, setProbeX] = useState<number | null>(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'graph' | 'functions'>('graph');
   const dragStartRef = useRef<{ mouseX: number; mouseY: number; initialView: typeof view }>({
     mouseX: 0,
     mouseY: 0,
+    initialView: view,
+  });
+
+  const touchStartRef = useRef<{
+    touch1: { x: number; y: number };
+    initialDist?: number;
+    initialView: typeof view;
+  }>({
+    touch1: { x: 0, y: 0 },
     initialView: view,
   });
 
@@ -396,6 +406,69 @@ export const Grapher2D: React.FC<Grapher2DProps> = ({ functions, onUpdateFunctio
     setIsDragging(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchStartRef.current = {
+        touch1: { x: t.clientX, y: t.clientY },
+        initialView: { ...view },
+      };
+      const relX = (t.clientX - rect.left) / rect.width;
+      const mathX = view.xMin + relX * (view.xMax - view.xMin);
+      setProbeX(mathX);
+    } else if (e.touches.length === 2) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      touchStartRef.current = {
+        touch1: { x: t1.clientX, y: t1.clientY },
+        initialDist: dist,
+        initialView: { ...view },
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+
+    if (e.touches.length === 1 && touchStartRef.current.touch1) {
+      const t = e.touches[0];
+      const dxPixels = t.clientX - touchStartRef.current.touch1.x;
+      const dyPixels = t.clientY - touchStartRef.current.touch1.y;
+
+      const xSpan = touchStartRef.current.initialView.xMax - touchStartRef.current.initialView.xMin;
+      const ySpan = touchStartRef.current.initialView.yMax - touchStartRef.current.initialView.yMin;
+
+      const dxMath = (dxPixels / rect.width) * xSpan;
+      const dyMath = (dyPixels / rect.height) * ySpan;
+
+      setView({
+        xMin: touchStartRef.current.initialView.xMin - dxMath,
+        xMax: touchStartRef.current.initialView.xMax - dxMath,
+        yMin: touchStartRef.current.initialView.yMin + dyMath,
+        yMax: touchStartRef.current.initialView.yMax + dyMath,
+      });
+
+      const relX = (t.clientX - rect.left) / rect.width;
+      const mathX = view.xMin + relX * (view.xMax - view.xMin);
+      setProbeX(mathX);
+    } else if (e.touches.length === 2 && touchStartRef.current.initialDist) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      if (currentDist > 10 && touchStartRef.current.initialDist > 10) {
+        const factor = touchStartRef.current.initialDist / currentDist;
+        zoom(factor > 1 ? 1.04 : 0.96);
+      }
+    }
+  };
+
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY > 0 ? 1.12 : 0.89;
@@ -404,8 +477,53 @@ export const Grapher2D: React.FC<Grapher2DProps> = ({ functions, onUpdateFunctio
 
   return (
     <div className="flex flex-col lg:flex-row w-full h-full bg-slate-950 overflow-hidden">
+      {/* Mobile Top View Switcher */}
+      <div className="lg:hidden px-3 pt-2.5 pb-1 bg-slate-950 flex items-center justify-center shrink-0">
+        <div className="flex items-center p-1 bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm">
+          <button
+            onClick={() => setMobileTab('graph')}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              mobileTab === 'graph'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Graph Canvas
+          </button>
+          <button
+            onClick={() => setMobileTab('functions')}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+              mobileTab === 'functions'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>Functions</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                mobileTab === 'functions'
+                  ? 'bg-slate-950 text-cyan-300'
+                  : 'bg-slate-800 text-slate-300'
+              }`}
+            >
+              {functions.length}
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* Sidebar Function List & Controls */}
-      <div className="w-full lg:w-96 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col h-auto lg:h-full shrink-0">
+      <div
+        className={`w-full lg:w-96 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex-col h-full shrink-0 ${
+          mobileTab === 'graph' ? 'hidden lg:flex' : 'flex'
+        }`}
+      >
+        <button
+          onClick={() => setMobileTab('graph')}
+          className="lg:hidden m-3 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs shadow-md active:scale-98"
+        >
+          View Updated Graph Canvas →
+        </button>
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-sm text-white">Functions & Calculus</h2>
@@ -556,51 +674,76 @@ export const Grapher2D: React.FC<Grapher2DProps> = ({ functions, onUpdateFunctio
       </div>
 
       {/* Main 2D Canvas Area */}
-      <div className="relative flex-1 h-full min-h-[400px]">
+      <div
+        className={`relative flex-1 h-full w-full min-h-[350px] overflow-hidden ${
+          mobileTab === 'functions' ? 'hidden lg:flex' : 'flex'
+        }`}
+      >
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleMouseUp}
+          onTouchCancel={handleMouseUp}
           onWheel={handleWheel}
-          className="w-full h-full cursor-crosshair block"
+          className="w-full h-full cursor-crosshair block touch-none"
         />
 
+        {/* Floating Mobile Tangent Inspector */}
+        {probeX !== null && functions.length > 0 && (
+          <div className="lg:hidden absolute top-4 left-4 z-10 bg-slate-900/95 border border-slate-800 px-3 py-1.5 rounded-xl shadow-lg text-[11px] font-mono text-amber-300 flex items-center gap-2 backdrop-blur-md">
+            <Crosshair className="w-3.5 h-3.5" />
+            <span>x₀ = {probeX.toFixed(2)}</span>
+          </div>
+        )}
+
         {/* Viewport Floating Zoom & Reset Tools */}
-        <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl shadow-lg">
+        <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl shadow-lg backdrop-blur-md z-10">
           <button
             onClick={() => zoom(0.8)}
-            className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 sm:p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors active:scale-95"
             title="Zoom In"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             onClick={() => zoom(1.25)}
-            className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 sm:p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors active:scale-95"
             title="Zoom Out"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
           <button
             onClick={resetZoom}
-            className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 sm:p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors active:scale-95"
             title="Reset View"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Legend Overlay at bottom left */}
-        <div className="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl shadow-lg text-[11px] text-slate-300 flex items-center gap-4">
+        {/* Floating Mobile Function Manager Badge */}
+        <button
+          onClick={() => setMobileTab('functions')}
+          className="lg:hidden absolute bottom-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/95 border border-slate-700 text-cyan-300 text-xs font-semibold shadow-xl backdrop-blur-md active:scale-95"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Functions ({functions.length})</span>
+        </button>
+
+        {/* Legend Overlay at bottom left (desktop) */}
+        <div className="hidden sm:flex absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl shadow-lg text-[11px] text-slate-300 items-center gap-4 backdrop-blur-md">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" /> Real Root
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" /> Tangent Line
           </span>
-          <span className="text-slate-500">Drag to Pan | Scroll to Zoom</span>
+          <span className="text-slate-500">Drag to Pan | Scroll / Pinch to Zoom</span>
         </div>
       </div>
     </div>
