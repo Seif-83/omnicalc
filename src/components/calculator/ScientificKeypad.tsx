@@ -214,12 +214,12 @@ export const ScientificKeypad: React.FC = () => {
 
       {/* Main Workspace Body */}
       <div
-        className={`flex-1 flex-col p-2.5 sm:p-5 lg:p-6 max-w-5xl mx-auto w-full justify-start overflow-y-auto ${
+        className={`flex-1 flex-col p-2.5 sm:p-5 lg:p-6 max-w-5xl mx-auto w-full justify-start overflow-y-auto overflow-x-hidden ${
           mobileTab === 'history' ? 'hidden lg:flex' : 'flex'
         }`}
       >
         {/* Large Prominent Display Screen */}
-        <div className="relative group bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-4 sm:p-6 shadow-2xl mb-3 sm:mb-4 transition-all duration-300 hover:border-cyan-500/40 hover:shadow-cyan-950/30 shrink-0">
+        <div className="relative overflow-hidden group bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-4 sm:p-6 shadow-2xl mb-3 sm:mb-4 transition-all duration-300 hover:border-cyan-500/40 hover:shadow-cyan-950/30 shrink-0">
           {/* Subtle Ambient Glow Mesh */}
           <div className="pointer-events-none absolute -top-10 -right-10 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl opacity-75" />
           
@@ -294,6 +294,7 @@ export const ScientificKeypad: React.FC = () => {
           <div className="flex items-center gap-2">
             {/* The main requested toggle button to reveal/hide the other elements */}
             <CreativeButton
+              id="toggle-extra-functions-btn"
               onClick={() => setShowOtherElements(!showOtherElements)}
               variant={showOtherElements ? 'toggle' : 'secondary'}
               size="sm"
@@ -310,25 +311,42 @@ export const ScientificKeypad: React.FC = () => {
               )}
             </CreativeButton>
 
-            {/* Quick status badge */}
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400">
-              {showOtherElements ? (
-                <>
-                  <Layers className="w-3 h-3 text-cyan-400" />
-                  <span className="text-cyan-300 font-medium">Dual Studio Mode</span>
-                </>
-              ) : (
-                <>
-                  <EyeOff className="w-3 h-3 text-slate-500" />
-                  <span>Main Keypad Only (Enlarged)</span>
-                </>
-              )}
+            {/* Segmented Mode Switcher */}
+            <div className="flex items-center p-0.5 sm:p-1 bg-slate-950/80 border border-slate-800 rounded-xl text-[11px]">
+              <button
+                type="button"
+                id="mode-main-keypad-btn"
+                onClick={() => setShowOtherElements(false)}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                  !showOtherElements 
+                    ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Show only large main calculation keys"
+              >
+                <EyeOff className="w-3.5 h-3.5" />
+                <span>Main Keypad</span>
+              </button>
+              <button
+                type="button"
+                id="mode-scientific-studio-btn"
+                onClick={() => setShowOtherElements(true)}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                  showOtherElements 
+                    ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Show extended scientific functions"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Scientific Functions</span>
+              </button>
             </div>
           </div>
 
           {/* Category Filter Pills (Visible when other elements are shown) */}
           {showOtherElements && (
-            <div className="flex items-center gap-1 overflow-x-auto max-w-full py-0.5">
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-full py-0.5">
               {(['all', 'trig', 'powers', 'logs', 'constants'] as FunctionCategory[]).map((cat) => (
                 <button
                   key={cat}
@@ -559,7 +577,7 @@ export const ScientificKeypad: React.FC = () => {
                     +
                   </CreativeButton>
 
-                  {/* Row 5: 0, Decimal, Ans, Equals */}
+                  {/* Row 5: 0, Decimal, Equals (Spans 2 columns) */}
                   <CreativeButton
                     onClick={() => appendToken('0')}
                     variant="number"
@@ -581,22 +599,11 @@ export const ScientificKeypad: React.FC = () => {
                   </CreativeButton>
 
                   <CreativeButton
-                    onClick={() => appendToken(lastAnswer !== '0' ? lastAnswer : '(')}
-                    variant="secondary"
-                    size="lg"
-                    enableSound={soundEnabled}
-                    className="text-xs sm:text-sm font-semibold text-cyan-300"
-                    title="Previous Answer / Parenthesis"
-                  >
-                    {lastAnswer !== '0' ? 'Ans' : '( )'}
-                  </CreativeButton>
-
-                  <CreativeButton
                     onClick={handleEvaluate}
                     variant="equals"
                     size="lg"
                     enableSound={soundEnabled}
-                    className="text-2xl font-black"
+                    className="col-span-2 text-2xl font-black"
                     title="Evaluate Calculation"
                   >
                     =
@@ -769,7 +776,7 @@ export const ScientificKeypad: React.FC = () => {
                   +
                 </CreativeButton>
 
-                {/* Row 5: 0, Decimal, Ans, Equals */}
+                {/* Row 5: 0, Decimal, Equals (Spans 2 columns) */}
                 <CreativeButton
                   onClick={() => appendToken('0')}
                   variant="number"
@@ -791,22 +798,11 @@ export const ScientificKeypad: React.FC = () => {
                 </CreativeButton>
 
                 <CreativeButton
-                  onClick={() => appendToken(lastAnswer !== '0' ? lastAnswer : '(')}
-                  variant="secondary"
-                  size="xl"
-                  enableSound={soundEnabled}
-                  className="text-base sm:text-lg font-semibold text-cyan-300"
-                  title="Previous Answer / Parenthesis"
-                >
-                  {lastAnswer !== '0' ? 'Ans' : '( )'}
-                </CreativeButton>
-
-                <CreativeButton
                   onClick={handleEvaluate}
                   variant="equals"
                   size="xl"
                   enableSound={soundEnabled}
-                  className="text-3xl sm:text-4xl font-black"
+                  className="col-span-2 text-3xl sm:text-4xl font-black"
                   title="Evaluate Calculation"
                 >
                   =
